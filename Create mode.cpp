@@ -36,9 +36,54 @@ void Game_Window::do_create(){
         }
 		refresh_map();
         update_create_mode(false);
-		
+        //保存地图
+        {
+        const char* DIYmap=fl_input("Please name your DIY map if you want to save it as .bgdat file.");
+            if(!DIYmap) return;
+        string map2=DIYmap;
+        string map="Data/"+map2+".bgdat";
+        std::fstream _file;
+        _file.open(map, std::ios::in);
+        if(_file)
+        {
+        switch(fl_ask("The file name has already existed. Are you sure you want to reset the map?"))
+        {
+                case false:
+                    return;
+                case true:
+                    std::remove(map.c_str());
+                    break;
+        }
+        }
+            std::ofstream ost{map};
+			if (!ost) {
+				fl_alert("Cannot find folder: Data/");
+			}
+            for(int j=1;j<=13;++j){
+                for(int i=1;i<=13;++i){
+            if(Displaying_Map.Game_Wall[j][i])
+            ost<<wall<<' ';
+            else if(Displaying_Map.player_x==j&&Displaying_Map.player_y==i&&!Displaying_Map.Game_Goal[j][i])
+            ost<<player<<' ';
+            else if(Displaying_Map.player_x==j&&Displaying_Map.player_y==i&&Displaying_Map.Game_Goal[j][i])
+            ost<<player_goal<<' ';
+            else if(Displaying_Map.Game_box[j][i]&&!Displaying_Map.Game_Goal[j][i])
+            ost<<'3'<<' ';
+            else if(!Displaying_Map.Game_box[j][i]&&Displaying_Map.Game_Goal[j][i])
+            ost<<goal<<' ';
+            else if(Displaying_Map.Game_box[j][i]&&Displaying_Map.Game_Goal[j][i])
+            ost<<goal_box<<' ';
+            else
+            ost<<nothing<<' ';
+                }
+                if(j!=13)ost<<'\n';
+            }
+            Displaying_Map.Puzzle_File=map;
+        }
+        
     }
 }
+
 void Game_Window::update_option_button(bool active){
     if(active){
         black_button->show();
@@ -157,10 +202,14 @@ void Game_Window::do_click_event(int x, int y){
             fl_alert("You are not allowed to put things here.");
             return;
         }
-		int px = Displaying_Map.player_x, py = Displaying_Map.player_y;
+        int px = Displaying_Map.player_x, py = Displaying_Map.player_y;
         switch (option) {
             case wall:
                 //replace_image(j, i, FILE_WALL);
+                if (Displaying_Map.player_x == j && Displaying_Map.player_y == i) {
+                    fl_alert("You cannot place the wall on player. Please move the player first!");
+                    return;
+                }
                 Displaying_Map.Game_Wall[j][i]=true;
                 if(Displaying_Map.Game_Goal[j][i]){
                     --Displaying_Map.Goals_num;
@@ -170,21 +219,19 @@ void Game_Window::do_click_event(int x, int y){
                     --Displaying_Map.boxes_num;
                     Displaying_Map.Game_box[j][i]=false;
                 }
-                if( Displaying_Map.player_x==j&&Displaying_Map.player_y==i){
-                    player_button->activate();
-                }
-				//replace_image(j, i, Get_File_Name(Displaying_Map, j, i));
+                
+                //replace_image(j, i, Get_File_Name(Displaying_Map, j, i));
                 replace_image(j, i, FILE_WALL);
                 break;
             case player:
                 //replace_image(j, i, FILE_PLAYER);
                 Displaying_Map.Game_Wall[j][i]=false;
-				/*
-                if(Displaying_Map.Game_Goal[j][i]){
-                    --Displaying_Map.Goals_num;
-                    Displaying_Map.Game_Goal[j][i]=false;
-                }
-				*/
+                /*
+                 if(Displaying_Map.Game_Goal[j][i]){
+                 --Displaying_Map.Goals_num;
+                 Displaying_Map.Game_Goal[j][i]=false;
+                 }
+                 */
                 if(Displaying_Map.Game_box[j][i]){
                     --Displaying_Map.boxes_num;
                     Displaying_Map.Game_box[j][i]=false;
@@ -192,23 +239,23 @@ void Game_Window::do_click_event(int x, int y){
                 Displaying_Map.player_x=j;
                 Displaying_Map.player_y=i;
                 Displaying_Map.player_num=1;
-				replace_image(px, py, Get_File_Name(Displaying_Map, px, py));
+                replace_image(px, py, Get_File_Name(Displaying_Map, px, py));
                 //player_button->deactivate();
                 //playergoal_button->deactivate();
                 //option=' ';
-				replace_image(j, i, Get_File_Name(Displaying_Map, j, i));
+                replace_image(j, i, Get_File_Name(Displaying_Map, j, i));
                 break;
             case '3':
                 
                 Displaying_Map.Game_Wall[j][i]=false;
                 if( Displaying_Map.player_x==j&&Displaying_Map.player_y==i){
-					fl_alert("You cannot place the box on player. Please move the player first!");
-					return;
-					/*
-                    --Displaying_Map.player_num;
-                    player_button->activate();
-                    playergoal_button->activate();
-					*/
+                    fl_alert("You cannot place the box on player. Please move the player first!");
+                    return;
+                    /*
+                     --Displaying_Map.player_num;
+                     player_button->activate();
+                     playergoal_button->activate();
+                     */
                 }
                 if(Displaying_Map.Game_Goal[j][i]){
                     --Displaying_Map.Goals_num;
@@ -218,7 +265,7 @@ void Game_Window::do_click_event(int x, int y){
                 {--Displaying_Map.boxes_num;}
                 ++Displaying_Map.boxes_num;
                 Displaying_Map.Game_box[j][i]=true;
-				replace_image(j, i, Get_File_Name(Displaying_Map, j, i));
+                replace_image(j, i, Get_File_Name(Displaying_Map, j, i));
                 break;
             case goal:
                 //replace_image(j, i, FILE_GOAL);
@@ -232,14 +279,14 @@ void Game_Window::do_click_event(int x, int y){
                     --Displaying_Map.boxes_num;
                     Displaying_Map.Game_box[j][i]=false;
                 }
-				/*
-                if( Displaying_Map.player_x==j&&Displaying_Map.player_y==i){
-                    --Displaying_Map.player_num;
-                    player_button->activate();
-                    playergoal_button->activate();
-                }
-				*/
-				replace_image(j, i, Get_File_Name(Displaying_Map, j, i));
+                /*
+                 if( Displaying_Map.player_x==j&&Displaying_Map.player_y==i){
+                 --Displaying_Map.player_num;
+                 player_button->activate();
+                 playergoal_button->activate();
+                 }
+                 */
+                replace_image(j, i, Get_File_Name(Displaying_Map, j, i));
                 break;
             case player_goal:
                 //replace_image(j, i, FILE_PLAYER);
@@ -256,12 +303,13 @@ void Game_Window::do_click_event(int x, int y){
                 Displaying_Map.player_x=j;
                 Displaying_Map.player_y=i;
                 Displaying_Map.player_num = 1;
-				replace_image(px, py, Get_File_Name(Displaying_Map, px, py));
-				//player_button->deactivate();
-				//playergoal_button->deactivate();
+                replace_image(px, py, Get_File_Name(Displaying_Map, px, py));
+                //player_button->deactivate();
+                //playergoal_button->deactivate();
                 //option=' ';
-				replace_image(j, i, Get_File_Name(Displaying_Map, j, i));
+                replace_image(j, i, Get_File_Name(Displaying_Map, j, i));
                 break;
+                
             case '7':
                 //replace_image(j, i, FILE_BLANK);
                 Displaying_Map.Game_Wall[j][i]=true;
@@ -274,11 +322,13 @@ void Game_Window::do_click_event(int x, int y){
                     Displaying_Map.Game_box[j][i]=false;
                 }
                 if( Displaying_Map.player_x==j&&Displaying_Map.player_y==i){
-                    --Displaying_Map.player_num;
+                    Displaying_Map.player_num--;
+                    Displaying_Map.player_x = Displaying_Map.player_y = -MAX_LEN;
                     player_button->activate();
                 }
-				replace_image(j, i, Get_File_Name(Displaying_Map, j, i));
+                replace_image(j, i, FILE_BLANK);
                 break;
+                
             case nothing:
                 //replace_image(j, i, FILE_FLOOR);
                 Displaying_Map.Game_Wall[j][i]=false;
@@ -290,16 +340,13 @@ void Game_Window::do_click_event(int x, int y){
                     --Displaying_Map.boxes_num;
                     Displaying_Map.Game_box[j][i]=false;
                 }
-                if( Displaying_Map.player_x==j&&Displaying_Map.player_y==i){
-                    player_button->activate();
-                }
-				replace_image(j, i, Get_File_Name(Displaying_Map, j, i));
+                replace_image(j, i, Get_File_Name(Displaying_Map, j, i));
                 break;
             case goal_box:
                 //replace_image(j, i, FILE_RED_BOX);
                 if( Displaying_Map.player_x==j&&Displaying_Map.player_y==i){
-                    --Displaying_Map.player_num;
-                    player_button->activate();
+                    fl_alert("You cannot place the box on player. Please move the player first!");
+                    return;
                 }
                 Displaying_Map.Game_Wall[j][i]=false;
                 if(!Displaying_Map.Game_box[j][i]){
@@ -310,10 +357,10 @@ void Game_Window::do_click_event(int x, int y){
                     ++Displaying_Map.Goals_num;
                     Displaying_Map.Game_Goal[j][i]=true;
                 }
-				replace_image(j, i, Get_File_Name(Displaying_Map, j, i));
+                replace_image(j, i, Get_File_Name(Displaying_Map, j, i));
                 break;
             default:break;
         }
-        std::cout << "x = " << x << ", y = " << y << "\n";
     }
+    
 }

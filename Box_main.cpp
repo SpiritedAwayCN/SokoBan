@@ -40,6 +40,18 @@ void Create_window(void *p) {
 }
 
 int second_thread(GameMap Calc_map, short mode) {
+	try {
+		Calc_map.judge();
+        if(Calc_map.Goals_num>MAX_BOX)
+            throw std::runtime_error{"Too many boxes!"};
+	}catch(std::runtime_error &e){
+		oss_box.str("");
+		oss_box << e.what();
+		Fl::lock();
+		Fl::awake(update_msg, new bool(true));
+		Fl::unlock();
+		return 1;
+	}
 	computing = true;
 	BOX_CALCULATOR Calc_Task{Calc_map , mode};
 	Calc_Task.do_Compute();
@@ -60,7 +72,7 @@ int second_thread(GameMap Calc_map, short mode) {
 		Fl::unlock();
 	}else if (Calc_Task.trivial) {
 		oss_box.str("");
-		oss_box << "Trivail!";
+		oss_box << "Trivial!";
 		Fl::lock();
 		Fl::awake(update_msg, new bool (true));
 		Fl::unlock();
@@ -86,7 +98,7 @@ void update_msg(void *p) {
 
 string Get_File_Name(const GameMap& Map, short x, short y) {
 	//根据地图数组的数据返回对应图像文件名
-	if (x == Map.player_x&&y == Map.player_y&&int(15-Map.Map_length)/2-1!=Map.player_x) return FILE_PLAYER;
+	if (x == Map.player_x&&y == Map.player_y) return FILE_PLAYER;
 	if (Map.Game_Goal[x][y] && Map.Game_box[x][y]) return FILE_RED_BOX;
 	if (Map.Game_Goal[x][y]) return FILE_GOAL;
 	if (Map.Game_box[x][y]) return FILE_BOX;
@@ -97,7 +109,7 @@ string Get_File_Name(const GameMap& Map, short x, short y) {
 int main() {
 	// 生成一个窗口Game_Window类似乎是调用构造函数就直接显示
 	
-	win = new Game_Window{ Point{100, 100}, 680, 480, "BoxGames" };
+	win = new Game_Window{ Point{100, 100}, 680, 480, "SokoBan V1.0" };
 	// 最先执行的地方应该是win的构造函数
 
 	win2 = new Fl_Double_Window{ 420,320, "Results" };

@@ -602,7 +602,7 @@ void BOX_CALCULATOR::do_Compute() {
 		for (short j = Calc_Map.Map_left; j < Calc_Map.Map_left + Calc_Map.Map_width; j++)
 			if (Calc_Map.Game_box[i][j]) {
 				//箱子值：((MAX_LEN - 2)*(x-1)+(y-1))<<4
-				init_status.box[index++] = ((MAX_LEN - 2) * (i - 1) + (j - 1)) << 4;
+                init_status.box[index++] = ((MAX_LEN - 2) * (i - 1) + (j - 1)) << 4;
 				//比较时记得排序
 			}
 	if (judge_finished(init_status)) {

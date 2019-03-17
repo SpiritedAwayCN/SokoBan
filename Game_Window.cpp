@@ -131,11 +131,6 @@ int Game_Window::handle(int event) {
 				else if (Fl::event_key() == 'r')
 					Game_Window::do_retry();
 
-				else if (Fl::event_key()) {
-					//这一段可用来测试按键数值（如上下左右），将输出在后台
-					//最终这段将被删除，并删除头文件<iostream>
-					std::cout << Fl::event_key() << std::endl;
-				}
 				isend();
 				ret = 1;
 				break;
@@ -276,21 +271,20 @@ void Game_Window::analyse_string(std::string &File_Name) {
 		File_Name += temp[j];
 	}
 	File_Name += std::to_string(cnt);
-	for (index += 1; index < (int)temp.length(); index++) {
+	for (index += 1; index < temp.length(); index++) {
 		File_Name += temp[index];
 	}
 	return;
 }
 void Game_Window::do_load(bool auto_load = false) {
 	std::string File_Name{Displaying_Map.Puzzle_File};
-   
 	if (Displaying_Map.Puzzle_File.length() == 0) {
 		auto_load = false;
 		File_Name += "Data/";
 	}
 		
 	if (!auto_load) {
-		const char* name = fl_file_chooser("test", "*bgdat",File_Name.c_str() , 1);
+		const char* name = fl_file_chooser("Load", "*bgdat",File_Name.c_str() , 1);
 		if (!name)return;
 		File_Name = name;
 	} else {
@@ -306,7 +300,8 @@ void Game_Window::do_load(bool auto_load = false) {
 		for (int j = 0; j < MAX_LEN; j++) {
 			replace_image(i, j, Get_File_Name(Displaying_Map, i, j));
 		}
-	try { Displaying_Map.judge(); }
+	try { Displaying_Map.judge();
+    }
 	catch (std::exception&e) {
 		fl_alert(e.what());
 		return;
@@ -453,20 +448,19 @@ Game_Window::Game_Window(Point xy, int w, int h, const string& title)
 	Terminate_button->deactivate();
 }
 Game_Window::~Game_Window(){
-	//Game_Window析构函数
+/*	//Game_Window析构函数
 	delete Text_Msg;
-	delete[] &Text_cordi;
+	delete[] Text_cordi;
 	delete undo_button,BFS_button,BBFS_button,DFS_button,IDDFS_button,Terminate_button,retry_button;
 	for (int i = 0; i < MAX_LEN; i++) {
-		for (int j = 0; j < MAX_LEN; j++)
-			delete img_list[i][j];
-		delete[] &img_list[i];
+		delete[] img_list[i];
 	}
- delete[] &img_list;
+ delete[] img_list;
+*/
  }
 void Game_Window::do_calc() {
 	if (win2->shown() || computing) {
-		fl_alert("Sorry, current computing task hasn't completed yet!");
+		fl_alert("Sorry, please close the Results Window first!");
 		return;
 	}
 	const char* cont;
@@ -489,7 +483,7 @@ void Game_Window::do_calc() {
 
 void Game_Window::do_calc_id() {
 	if (win2->shown() || computing) {
-		fl_alert("Sorry, current computing task hasn't completed yet!");
+		fl_alert("Sorry, please close the Results Window first!");
 		return;
 	}
 	refresh_map();
@@ -514,7 +508,7 @@ void Game_Window::do_HideGrid(){
 }
 void Game_Window::do_calc_BFS() {
 	if (win2->shown() || computing) {
-		fl_alert("Sorry, current computing task hasn't completed yet!");
+		fl_alert("Sorry, please close the Results Window first!");
 		return;
 	}
 	refresh_map();
@@ -525,7 +519,7 @@ void Game_Window::do_calc_BFS() {
 }
 void Game_Window::do_calc_BBFS() {
 	if (win2->shown() || computing) {
-		fl_alert("Sorry, current computing task hasn't completed yet!");
+		fl_alert("Sorry, please close the Results Window first!");
 		return;
 	}
 	refresh_map();
@@ -785,15 +779,18 @@ void Game_Window::update_create_mode(bool active)
         create_sign();
     }
     if(!active)
-    {   creative_mode=false;
+    {
         update_option_button(false);
         creat_button.set_label("Create");
 		update_option_button(false);
+        if(creative_mode){
         for(int n=0;n<8;++n)
         {
         detach(*img_create[n]);
         delete img_create[n];
         }
         redraw();
+        }
+        creative_mode=false;
     }
 }

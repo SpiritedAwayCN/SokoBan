@@ -175,7 +175,7 @@ void GameMap::get(std::istream& ist)
 				{++column;
 				++boxes_num;
 				Game_Wall[line][column] = false;
-				Game_box[line][column] = true;    //这里以及后面各处都是默认数组从【1】【1】开始，有一个元素为零的值最后再全部赋为wall
+				Game_box[line][column] = true;
 				break; }
 				case goal_box:
 				{++column;
@@ -237,6 +237,7 @@ void GameMap::get(std::istream& ist)
 	Map_width = column_in_line[0];
 	Map_length = line - 1;
 	if (Map_width > 13 || Map_length > 13) {
+        
 		throw std::runtime_error{ "The map is bigger than 13*13!" };
 	}
 }
@@ -247,8 +248,8 @@ void GameMap::init() {
 	player_num = 0;
 	Map_length = 0;
 	Map_width = 0;
-	player_x = 0;
-	player_y = 0;
+	player_x = -MAX_LEN;
+	player_y = -MAX_LEN;
 	memset(Game_Wall, 1, sizeof(Game_Wall));
 	memset(Game_box, 0, sizeof(Game_box));
 	memset(Game_Goal, 0, sizeof(Game_Goal));

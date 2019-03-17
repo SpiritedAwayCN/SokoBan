@@ -26,7 +26,7 @@ Window::Window(Point xy, int ww, int hh, const string& title)
 
 void Window::init()
 {
-  resizable(this);
+  //resizable(this);
   show();
 }
 
